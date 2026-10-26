@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unambiguous Grammar Construction Simulator | Formal Languages & Automata</title>
+  <meta name="description" content="Interactive Formal Languages and Automata simulator demonstrating Ambiguous vs Unambiguous Grammar construction, operator precedence, and parse trees.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <a href="{{ url_for('home') }}" class="nav-brand">
+      <div class="brand-icon"><i class="bi bi-diagram-3-fill"></i></div>
+      <span>GrammarSim <span class="brand-badge">FLA Lab</span></span>
+    </a>
+    <nav>
+      <ul class="nav-menu">
+        <li><a href="{{ url_for('home') }}" class="nav-link active"><i class="bi bi-house-door"></i> Home</a></li>
+        <li><a href="{{ url_for('simulator') }}" class="nav-link"><i class="bi bi-play-circle"></i> Simulator</a></li>
+        <li><a href="{{ url_for('comparison') }}" class="nav-link"><i class="bi bi-columns-gap"></i> Comparison</a></li>
+        <li><a href="#theory-section" class="nav-link"><i class="bi bi-book"></i> FLA Concepts</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-wrapper">
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-tag">
+        <i class="bi bi-mortarboard-fill"></i> Academic Project &bull; Formal Languages and Automata (FLA)
+      </div>
+      <h1 class="hero-title">
+        Unambiguous Grammar <br>
+        <span class="text-gradient">Construction Simulator</span>
+      </h1>
+      <p class="hero-subtitle">
+        An interactive simulator designed for undergraduate computer science students to visualize, analyze, 
+        and contrast ambiguous arithmetic grammars against mathematically sound, precedence-enforcing unambiguous grammars.
+      </p>
+      <div class="hero-cta">
+        <a href="{{ url_for('simulator') }}" class="btn btn-primary btn-lg">
+          <i class="bi bi-play-fill"></i> Start Simulation
+        </a>
+        <a href="{{ url_for('comparison') }}" class="btn btn-accent btn-lg">
+          <i class="bi bi-arrow-left-right"></i> Side-by-Side Comparison
+        </a>
+        <a href="#theory-section" class="btn btn-secondary btn-lg">
+          <i class="bi bi-journal-text"></i> Explore Theory
+        </a>
+      </div>
+    </section>
+
+    <!-- Quick Grammar Showcase Grid -->
+    <section class="dashboard-grid">
+      <!-- Ambiguous Grammar Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="bi bi-exclamation-diamond text-danger"></i> Ambiguous Grammar (G₁)
+          </div>
+          <span class="grammar-badge badge-ambiguous">Multiple Trees</span>
+        </div>
+        <p style="font-size:0.9rem; color:var(--slate-600);">
+          Allows more than one distinct leftmost derivation (and parse tree) for at least one string in its language.
+        </p>
+        <div class="grammar-code-box">
+          <span class="rule-lhs">E</span> <span class="rule-arrow">&rarr;</span> <span class="rule-rhs">E <span class="rule-terminal">+</span> E | E <span class="rule-terminal">*</span> E | <span class="rule-terminal">(</span> E <span class="rule-terminal">)</span> | <span class="rule-terminal">id</span></span>
+        </div>
+        <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:var(--radius-md); padding:0.85rem; font-size:0.85rem; color:#991b1b;">
+          <strong>Precedence Hazard:</strong> For <code>id + id * id</code>, G₁ permits both <code>(id + id) * id</code> (addition first) and <code>id + (id * id)</code> (multiplication first).
+        </div>
+      </div>
+
+      <!-- Unambiguous Grammar Card -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="bi bi-shield-check text-success"></i> Unambiguous Grammar (G₂)
+          </div>
+          <span class="grammar-badge badge-unambiguous">Deterministic</span>
+        </div>
+        <p style="font-size:0.9rem; color:var(--slate-600);">
+          Enforces strict mathematical operator precedence (<code>*</code> over <code>+</code>) and left-associativity.
+        </p>
+        <div class="grammar-code-box">
+          <span class="rule-lhs">E</span> <span class="rule-arrow">&rarr;</span> <span class="rule-rhs">E <span class="rule-terminal">+</span> T | T</span><br>
+          <span class="rule-lhs">T</span> <span class="rule-arrow">&rarr;</span> <span class="rule-rhs">T <span class="rule-terminal">*</span> F | F</span><br>
+          <span class="rule-lhs">F</span> <span class="rule-arrow">&rarr;</span> <span class="rule-rhs"><span class="rule-terminal">(</span> E <span class="rule-terminal">)</span> | <span class="rule-terminal">id</span></span>
+        </div>
+        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:var(--radius-md); padding:0.85rem; font-size:0.85rem; color:#166534;">
+          <strong>Unique Parse Tree:</strong> For <code>id + id * id</code>, G₂ strictly produces <code>id + (id * id)</code>, matching standard mathematics.
+        </div>
+      </div>
+    </section>
+
+    <!-- Project Objectives & Features Grid -->
+    <section class="dashboard-grid" style="margin-bottom: 2.5rem;">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="bi bi-bullseye"></i> Project Objectives
+          </div>
+        </div>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:0.75rem; font-size:0.92rem; color:var(--slate-700);">
+          <li style="display:flex; gap:0.5rem;"><i class="bi bi-check2-circle text-primary" style="font-size:1.1rem;"></i> <span><strong>Demystify Ambiguity:</strong> Visually illustrate why CFGs with flat productions produce conflicting syntactic structures.</span></li>
+          <li style="display:flex; gap:0.5rem;"><i class="bi bi-check2-circle text-primary" style="font-size:1.1rem;"></i> <span><strong>Operator Stratification:</strong> Teach how introducing non-terminals (T, F) partitions operations into strict precedence tiers.</span></li>
+          <li style="display:flex; gap:0.5rem;"><i class="bi bi-check2-circle text-primary" style="font-size:1.1rem;"></i> <span><strong>Interactive Parsing:</strong> Provide step-by-step playback with stack introspection and lookahead tokens.</span></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">
+            <i class="bi bi-stars"></i> Key Simulator Features
+          </div>
+        </div>
+        <ul style="list-style:none; display:flex; flex-direction:column; gap:0.75rem; font-size:0.92rem; color:var(--slate-700);">
+          <li style="display:flex; gap:0.5rem;"><i class="bi bi-diagram-3 text-accent" style="font-size:1.1rem;"></i> <span><strong>Dynamic SVG Trees:</strong> Hierarchical layout with pan/zoom, node tooltips, and SVG vector export.</span></li>
+          <li style="display:flex; gap:0.5rem;"><i class="bi bi-sliders text-accent" style="font-size:1.1rem;"></i> <span><strong>Playback Stepper:</strong> Play, pause, step forward, step backward, and speed controls.</span></li>
+          <li style="display:flex; gap:0.5rem;"><i class="bi bi-arrow-left-right text-accent" style="font-size:1.1rem;"></i> <span><strong>Side-by-Side Comparison:</strong> Dual-tree visualization for the same expression simultaneously.</span></li>
+          <li style="display:flex; gap:0.5rem;"><i class="bi bi-shield-exclamation text-accent" style="font-size:1.1rem;"></i> <span><strong>Diagnostic Error Handling:</strong> Pinpoints missing operands, unmatched parentheses, and invalid characters.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Educational Guide & FLA Theory Section -->
+    <section id="theory-section" class="card" style="margin-bottom: 2.5rem; padding: 2.5rem;">
+      <div style="border-bottom: 2px solid var(--slate-100); padding-bottom: 1rem; margin-bottom: 2rem;">
+        <span class="hero-tag" style="background:var(--primary-100); color:var(--primary-700); border:none;">
+          <i class="bi bi-book-half"></i> Comprehensive Academic Reference
+        </span>
+        <h2 style="font-size:1.85rem; font-weight:800; color:var(--slate-900); margin-top:0.5rem;">
+          Formal Languages & Automata Theory Fundamentals
+        </h2>
+        <p style="color:var(--slate-600); font-size:1rem;">
+          Essential theoretical concepts explaining grammar construction, derivations, and parsing mechanics.
+        </p>
+      </div>
+
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:2rem;">
+        <!-- Formal Grammar & CFG -->
+        <div>
+          <h3 style="font-size:1.15rem; font-weight:700; color:var(--primary-700); margin-bottom:0.6rem;">
+            1. Context-Free Grammar (CFG)
+          </h3>
+          <p style="font-size:0.92rem; color:var(--slate-600); line-height:1.6; margin-bottom:0.75rem;">
+            A Context-Free Grammar is formally defined as a 4-tuple:
+          </p>
+          <div style="background:var(--slate-100); padding:0.6rem 0.85rem; border-radius:var(--radius-md); font-family:var(--font-mono); font-size:0.9rem; font-weight:600; color:var(--slate-800); margin-bottom:0.75rem;">
+            G = (V, &Sigma;, R, S)
+          </div>
+          <ul style="padding-left:1.25rem; font-size:0.88rem; color:var(--slate-600); line-height:1.6;">
+            <li><strong>V (Non-terminals):</strong> Syntactic variables like {E, T, F}.</li>
+            <li><strong>&Sigma; (Terminals):</strong> Alphabet symbols like {+, *, (, ), id}.</li>
+            <li><strong>R (Productions):</strong> Rules of the form A &rarr; &alpha; where A &in; V, &alpha; &in; (V &cup; &Sigma;)*.</li>
+            <li><strong>S (Start symbol):</strong> Distinct initial variable S &in; V.</li>
+          </ul>
+        </div>
+
+        <!-- Ambiguous vs Unambiguous -->
+        <div>
+          <h3 style="font-size:1.15rem; font-weight:700; color:var(--primary-700); margin-bottom:0.6rem;">
+            2. Grammatical Ambiguity
+          </h3>
+          <p style="font-size:0.92rem; color:var(--slate-600); line-height:1.6; margin-bottom:0.75rem;">
+            A CFG is called <strong>ambiguous</strong> if there exists at least one string <em>w</em> &in; L(G) that has:
+          </p>
+          <ul style="padding-left:1.25rem; font-size:0.88rem; color:var(--slate-600); line-height:1.6; margin-bottom:0.75rem;">
+            <li>Two or more distinct <strong>parse trees</strong>, OR</li>
+            <li>Two or more distinct <strong>leftmost derivations</strong>.</li>
+          </ul>
+          <p style="font-size:0.88rem; color:var(--slate-600); line-height:1.6;">
+            Conversely, an <strong>unambiguous grammar</strong> guarantees that every valid string in the language maps to exactly ONE unique parse tree.
+          </p>
+        </div>
+
+        <!-- Derivations (LMD & RMD) -->
+        <div>
+          <h3 style="font-size:1.15rem; font-weight:700; color:var(--primary-700); margin-bottom:0.6rem;">
+            3. Derivations: LMD vs RMD
+          </h3>
+          <p style="font-size:0.92rem; color:var(--slate-600); line-height:1.6; margin-bottom:0.75rem;">
+            A derivation is a sequence of production steps replacing non-terminals with right-hand sides:
+          </p>
+          <ul style="padding-left:1.25rem; font-size:0.88rem; color:var(--slate-600); line-height:1.6;">
+            <li><strong>Leftmost Derivation (LMD):</strong> In every step, the leftmost non-terminal symbol in the sentential form is replaced.</li>
+            <li><strong>Rightmost Derivation (RMD):</strong> In every step, the rightmost non-terminal symbol is replaced (also called canonical derivation in bottom-up parsing).</li>
+          </ul>
+        </div>
+
+        <!-- Disambiguation & Precedence -->
+        <div>
+          <h3 style="font-size:1.15rem; font-weight:700; color:var(--primary-700); margin-bottom:0.6rem;">
+            4. Operator Precedence & Associativity
+          </h3>
+          <p style="font-size:0.92rem; color:var(--slate-600); line-height:1.6; margin-bottom:0.75rem;">
+            Disambiguation requires embedding two key algebraic rules into the productions:
+          </p>
+          <ul style="padding-left:1.25rem; font-size:0.88rem; color:var(--slate-600); line-height:1.6;">
+            <li><strong>Precedence via Stratification:</strong> Operations evaluated first (multiplication) appear lower in the derivation tree (under T) than operations evaluated later (addition under E).</li>
+            <li><strong>Associativity via Recursion:</strong> Left recursion (e.g. <code>E &rarr; E + T</code>) forces left-to-right grouping: <code>(a + b) + c</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Quick Launch Bar -->
+    <div style="text-align:center; padding: 2rem 0;">
+      <a href="{{ url_for('simulator') }}" class="btn btn-primary btn-lg" style="box-shadow:var(--shadow-glow);">
+        <i class="bi bi-cpu-fill"></i> Launch Interactive Simulator Now
+      </a>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content" style="justify-content: center; gap: 1.5rem;">
+      <a href="{{ url_for('home') }}" class="nav-link" style="padding:0.2rem 0.5rem;"><i class="bi bi-house-door"></i> Home</a>
+      <a href="{{ url_for('simulator') }}" class="nav-link" style="padding:0.2rem 0.5rem;"><i class="bi bi-play-circle"></i> Simulator</a>
+      <a href="{{ url_for('comparison') }}" class="nav-link" style="padding:0.2rem 0.5rem;"><i class="bi bi-columns-gap"></i> Comparison</a>
+    </div>
+  </footer>
+
+</body>
+</html>

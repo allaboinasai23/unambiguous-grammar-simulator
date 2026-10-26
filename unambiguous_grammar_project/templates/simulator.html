@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parsing Simulation | Unambiguous Grammar Construction Simulator</title>
+  <meta name="description" content="Step-by-step interactive parsing simulation and parse tree generation for ambiguous and unambiguous context-free grammars.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <a href="{{ url_for('home') }}" class="nav-brand">
+      <div class="brand-icon"><i class="bi bi-diagram-3-fill"></i></div>
+      <span>GrammarSim <span class="brand-badge">Simulator</span></span>
+    </a>
+    <nav>
+      <ul class="nav-menu">
+        <li><a href="{{ url_for('home') }}" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+        <li><a href="{{ url_for('simulator') }}" class="nav-link active"><i class="bi bi-play-circle"></i> Simulator</a></li>
+        <li><a href="{{ url_for('comparison') }}" class="nav-link"><i class="bi bi-columns-gap"></i> Comparison</a></li>
+        <li><a href="{{ url_for('home') }}#theory-section" class="nav-link"><i class="bi bi-book"></i> FLA Concepts</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Simulator Container -->
+  <main class="main-wrapper">
+
+    <!-- Top Configuration Header Card -->
+    <section class="simulator-header-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <h2 style="font-size:1.5rem; font-weight:800; color:var(--slate-900);">
+            <i class="bi bi-gear-wide-connected text-primary"></i> Simulation Workspace
+          </h2>
+          <p style="font-size:0.9rem; color:var(--slate-500);">
+            Select a formal grammar, input an arithmetic expression, and watch the parser construct the parse tree step by step.
+          </p>
+        </div>
+        <a href="{{ url_for('comparison') }}" class="btn btn-secondary btn-sm">
+          <i class="bi bi-columns-gap"></i> Switch to Comparison Mode
+        </a>
+      </div>
+
+      <!-- Grammar Selection Cards -->
+      <div class="grammar-selector-group">
+        <!-- Unambiguous Grammar Option -->
+        <div class="grammar-radio-card active" data-grammar="unambiguous" id="radioUnambiguous">
+          <div class="radio-indicator"></div>
+          <div class="radio-content">
+            <h4>Unambiguous Grammar (G₂) <span class="grammar-badge badge-unambiguous">Recommended</span></h4>
+            <p>E &rarr; E + T | T &nbsp;|&nbsp; T &rarr; T * F | F &nbsp;|&nbsp; F &rarr; (E) | id</p>
+            <p style="color:var(--accent-emerald); font-weight:600; font-size:0.8rem; margin-top:0.25rem;">
+              <i class="bi bi-check-circle"></i> Enforces strict operator precedence (* over +) and left-associativity.
+            </p>
+          </div>
+        </div>
+
+        <!-- Ambiguous Grammar Option -->
+        <div class="grammar-radio-card" data-grammar="ambiguous" id="radioAmbiguous">
+          <div class="radio-indicator"></div>
+          <div class="radio-content">
+            <h4>Ambiguous Grammar (G₁) <span class="grammar-badge badge-ambiguous">Demonstration</span></h4>
+            <p>E &rarr; E + E | E * E | (E) | id</p>
+            <p style="color:var(--accent-rose); font-weight:600; font-size:0.8rem; margin-top:0.25rem;">
+              <i class="bi bi-exclamation-triangle"></i> Demonstrates ambiguity: permits multiple parse trees for expressions like id + id * id.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Input Controls Row -->
+      <div class="input-controls-row">
+        <div class="expression-input-wrapper">
+          <label for="expressionInput" style="display:block; font-size:0.82rem; font-weight:700; color:var(--slate-600); margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;">
+            Expression Input (Terminals: <code>id</code>, <code>+</code>, <code>*</code>, <code>(</code>, <code>)</code>)
+          </label>
+          <input 
+            type="text" 
+            id="expressionInput" 
+            class="expression-input" 
+            value="id + id * id" 
+            placeholder="e.g. id + id * id, (id + id) * id"
+            autocomplete="off"
+            spellcheck="false"
+          >
+        </div>
+        <div style="display:flex; gap:0.5rem; align-items:flex-end;">
+          <button id="btnSimulate" class="btn btn-primary" onclick="runSimulator()">
+            <i class="bi bi-play-circle-fill"></i> Simulate
+          </button>
+          <button id="btnResetInput" class="btn btn-secondary" onclick="document.getElementById('expressionInput').value='id + id * id'; runSimulator();">
+            <i class="bi bi-arrow-counterclockwise"></i> Reset
+          </button>
+          <a href="{{ url_for('comparison') }}" class="btn btn-accent">
+            <i class="bi bi-arrow-left-right"></i> Compare
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Preset Expression Pills -->
+      <div class="preset-pills-row">
+        <span class="preset-pill-label"><i class="bi bi-bookmark-star"></i> Presets:</span>
+        <button class="preset-pill" data-expr="id + id * id">id + id * id</button>
+        <button class="preset-pill" data-expr="id * id + id">id * id + id</button>
+        <button class="preset-pill" data-expr="(id + id) * id">(id + id) * id</button>
+        <button class="preset-pill" data-expr="id + id + id">id + id + id</button>
+        <button class="preset-pill" data-expr="id * id * id">id * id * id</button>
+        <button class="preset-pill" data-expr="id + id">id + id</button>
+        <button class="preset-pill" data-expr="id + * id" style="border-color:#fca5a5; color:#b91c1c;">[Err] id + * id</button>
+        <button class="preset-pill" data-expr="(id + id" style="border-color:#fca5a5; color:#b91c1c;">[Err] (id + id</button>
+      </div>
+    </section>
+
+    <!-- Grammar Rule Reference Panel -->
+    <section class="card" style="margin-bottom:1.75rem; padding:1.25rem 1.5rem;">
+      <div id="rulesDisplayUnambiguous">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <h3 style="font-size:1.05rem; font-weight:700; color:var(--slate-900);">
+            <i class="bi bi-shield-check text-success"></i> Active Grammar: Unambiguous G₂
+          </h3>
+          <span style="font-size:0.82rem; color:var(--slate-500); font-family:var(--font-mono);">
+            Tuple: G₂ = ({E, T, F}, {+, *, (, ), id}, R₂, E)
+          </span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem; margin-top:0.75rem;">
+          <div class="grammar-code-box" style="margin:0;">
+            <span class="rule-lhs">E</span> <span class="rule-arrow">&rarr;</span> <span class="rule-rhs">E <span class="rule-terminal">+</span> T | T</span> &nbsp;&nbsp;<span style="color:#64748b; font-size:0.8rem;">(Tier 1: Addition)</span><br>
+            <span class="rule-lhs">T</span> <span class="rule-arrow">&rarr;</span> <span class="rule-rhs">T <span class="rule-terminal">*</span> F | F</span> &nbsp;&nbsp;<span style="color:#64748b; font-size:0.8rem;">(Tier 2: Multiplication)</span><br>
+            <span class="rule-lhs">F</span> <span class="rule-arrow">&rarr;</span> <span class="rule-rhs"><span class="rule-terminal">(</span> E <span class="rule-terminal">)</span> | <span class="rule-terminal">id</span></span> &nbsp;&nbsp;<span style="color:#64748b; font-size:0.8rem;">(Tier 3: Atomic Operands)</span>
+          </div>
+          <div>
+            <p style="font-size:0.85rem; color:var(--slate-600); line-height:1.5;">
+              <strong>Precedence Logic:</strong> Non-terminal <code>T</code> (Terms) generates multiplication operations deeper in the parse tree than <code>E</code> (Expressions). 
+              Because reductions occur bottom-up, multiplication is always evaluated prior to addition.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div id="rulesDisplayAmbiguous" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <h3 style="font-size:1.05rem; font-weight:700; color:var(--slate-900);">
+            <i class="bi bi-exclamation-triangle text-danger"></i> Active Grammar: Ambiguous G₁
+          </h3>
+          <span style="font-size:0.82rem; color:var(--slate-500); font-family:var(--font-mono);">
+            Tuple: G₁ = ({E}, {+, *, (, ), id}, R₁, E)
+          </span>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.25rem; margin-top:0.75rem;">
+          <div class="grammar-code-box" style="margin:0;">
+            <span class="rule-lhs">E</span> <span class="rule-arrow">&rarr;</span> <span class="rule-rhs">E <span class="rule-terminal">+</span> E | E <span class="rule-terminal">*</span> E | <span class="rule-terminal">(</span> E <span class="rule-terminal">)</span> | <span class="rule-terminal">id</span></span>
+          </div>
+          <div>
+            <p style="font-size:0.85rem; color:var(--slate-600); line-height:1.5;">
+              <strong>Why G₁ is Ambiguous:</strong> The grammar allows both <code>E + E</code> and <code>E * E</code> without precedence ranking or directional associativity. 
+              An expression such as <code>id + id * id</code> can be derived with addition at the root or multiplication at the root.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dynamic Result / Error Alert Banner -->
+    <div id="resultAlertBanner" class="alert-banner alert-success" style="display:none;">
+      <!-- Populated via simulator.js -->
+    </div>
+
+    <!-- Main Simulation Workspace: Parse Tree & Stepper Grid -->
+    <div class="simulator-workspace">
+
+      <!-- Left Column: Interactive Parse Tree Viewer -->
+      <section class="tree-viewer-card">
+        <div class="tree-toolbar">
+          <div style="display:flex; align-items:center; gap:0.75rem;">
+            <span style="font-weight:700; font-size:0.95rem; display:flex; align-items:center; gap:0.4rem;">
+              <i class="bi bi-diagram-3"></i> Dynamic Parse Tree
+            </span>
+            <!-- Ambiguous Tree Selector Tabs -->
+            <div id="treeTabsContainer" class="tree-tabs" style="display:none;">
+              <!-- Populated when multiple trees exist -->
+            </div>
+          </div>
+          <div class="tree-action-buttons">
+            <button id="btnZoomIn" class="btn btn-secondary btn-icon-only btn-sm" title="Zoom In">
+              <i class="bi bi-zoom-in"></i>
+            </button>
+            <button id="btnZoomOut" class="btn btn-secondary btn-icon-only btn-sm" title="Zoom Out">
+              <i class="bi bi-zoom-out"></i>
+            </button>
+            <button id="btnResetZoom" class="btn btn-secondary btn-icon-only btn-sm" title="Reset View">
+              <i class="bi bi-arrows-fullscreen"></i>
+            </button>
+            <button id="btnExportSvg" class="btn btn-primary btn-sm" title="Download SVG">
+              <i class="bi bi-download"></i> Export SVG
+            </button>
+          </div>
+        </div>
+
+        <!-- SVG Tree Container -->
+        <div id="simulatorTreeContainer" class="tree-canvas-container">
+          <svg id="simulatorTreeSvg" class="tree-svg"></svg>
+          <div class="tree-legend">
+            <div class="legend-item"><div class="legend-dot-nt"></div> Non-Terminal (E, T, F)</div>
+            <div class="legend-item"><div class="legend-dot-t"></div> Terminal (+, *, id)</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Step-by-Step Simulation Stepper & Derivations -->
+      <section class="stepper-card">
+        <div class="card-header" style="margin-bottom:1rem; padding-bottom:0.6rem;">
+          <div class="card-title" style="font-size:1.05rem;">
+            <i class="bi bi-play-btn-fill"></i> Step-by-Step Parser Stepper
+          </div>
+          <span id="stepCounterBadge" class="step-num-badge">Step 1 of 1</span>
+        </div>
+
+        <!-- Stepper Playback Controls -->
+        <div class="stepper-controls">
+          <div class="stepper-btn-row">
+            <button id="btnResetSteps" class="btn btn-secondary btn-sm" title="Reset to Step 1">
+              <i class="bi bi-skip-start-fill"></i>
+            </button>
+            <button id="btnPrevStep" class="btn btn-secondary btn-sm" title="Previous Step">
+              <i class="bi bi-caret-left-fill"></i> Prev
+            </button>
+            <button id="btnPlayPause" class="btn btn-primary btn-sm" style="min-width:85px;">
+              <i class="bi bi-play-fill"></i> Play
+            </button>
+            <button id="btnNextStep" class="btn btn-secondary btn-sm" title="Next Step">
+              Next <i class="bi bi-caret-right-fill"></i>
+            </button>
+          </div>
+          <div class="speed-control-row">
+            <span>Playback Speed:</span>
+            <select id="playbackSpeedSelect" style="padding:0.25rem 0.5rem; border-radius:var(--radius-sm); border:1px solid var(--slate-300); font-size:0.8rem;">
+              <option value="0.5">0.5x (Slow)</option>
+              <option value="1.0" selected>1.0x (Normal)</option>
+              <option value="2.0">2.0x (Fast)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Progress Track -->
+        <div class="progress-track">
+          <div id="progressFill" class="progress-fill"></div>
+        </div>
+
+        <!-- Current Step Details Card -->
+        <div class="current-step-display">
+          <div class="step-meta">
+            <span style="font-size:0.75rem; font-weight:700; text-transform:uppercase; color:var(--primary-700);">
+              Current Parser Action
+            </span>
+            <span id="stepRuleBadge" class="step-rule-badge">Start Symbol: E</span>
+          </div>
+          <h4 id="stepActionTitle" class="step-action-title">Start Parser</h4>
+          <p id="stepExplanation" class="step-explanation">
+            Initializing recursive-descent parser.
+          </p>
+          <table class="step-state-table">
+            <tr>
+              <td>Lookahead Token:</td>
+              <td id="stepLookahead" style="color:var(--primary-700);">id</td>
+            </tr>
+            <tr>
+              <td>Remaining Input:</td>
+              <td id="stepRemainingInput">+ id * id</td>
+            </tr>
+            <tr>
+              <td>Parser Stack:</td>
+              <td id="stepStack">E</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- Derivation Sequences Tabs -->
+        <div class="derivation-section">
+          <div class="tab-nav">
+            <button class="tab-nav-btn active" data-tab="tabLmd">Leftmost Derivation (LMD)</button>
+            <button class="tab-nav-btn" data-tab="tabRmd">Rightmost Derivation (RMD)</button>
+          </div>
+
+          <div id="tabLmd" class="tab-content-panel">
+            <div class="derivation-table-container">
+              <table class="derivation-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Sentential Form</th>
+                    <th>Production Applied</th>
+                  </tr>
+                </thead>
+                <tbody id="lmdTableBody">
+                  <!-- Populated via simulator.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="tabRmd" class="tab-content-panel" style="display:none;">
+            <div class="derivation-table-container">
+              <table class="derivation-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Sentential Form</th>
+                    <th>Production Applied</th>
+                  </tr>
+                </thead>
+                <tbody id="rmdTableBody">
+                  <!-- Populated via simulator.js -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content" style="justify-content: center; gap: 1.5rem;">
+      <a href="{{ url_for('home') }}" class="nav-link" style="padding:0.2rem 0.5rem;"><i class="bi bi-house-door"></i> Home</a>
+      <a href="{{ url_for('simulator') }}" class="nav-link active" style="padding:0.2rem 0.5rem;"><i class="bi bi-play-circle"></i> Simulator</a>
+      <a href="{{ url_for('comparison') }}" class="nav-link" style="padding:0.2rem 0.5rem;"><i class="bi bi-columns-gap"></i> Comparison</a>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/simulator.js') }}"></script>
+</body>
+</html>

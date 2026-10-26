@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Side-by-Side Comparison | Unambiguous Grammar Construction Simulator</title>
+  <meta name="description" content="Side-by-side formal comparison of Ambiguous vs Unambiguous Grammars, parse trees, and operator precedence.">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+
+  <!-- Navigation Bar -->
+  <header class="navbar">
+    <a href="{{ url_for('home') }}" class="nav-brand">
+      <div class="brand-icon"><i class="bi bi-diagram-3-fill"></i></div>
+      <span>GrammarSim <span class="brand-badge">Comparison</span></span>
+    </a>
+    <nav>
+      <ul class="nav-menu">
+        <li><a href="{{ url_for('home') }}" class="nav-link"><i class="bi bi-house-door"></i> Home</a></li>
+        <li><a href="{{ url_for('simulator') }}" class="nav-link"><i class="bi bi-play-circle"></i> Simulator</a></li>
+        <li><a href="{{ url_for('comparison') }}" class="nav-link active"><i class="bi bi-columns-gap"></i> Comparison</a></li>
+        <li><a href="{{ url_for('home') }}#theory-section" class="nav-link"><i class="bi bi-book"></i> FLA Concepts</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <!-- Main Container -->
+  <main class="main-wrapper">
+
+    <!-- Comparison Header Card -->
+    <section class="simulator-header-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem; flex-wrap:wrap; gap:1rem;">
+        <div>
+          <h2 style="font-size:1.5rem; font-weight:800; color:var(--slate-900);">
+            <i class="bi bi-arrow-left-right text-primary"></i> Side-by-Side Grammar Comparison
+          </h2>
+          <p style="font-size:0.9rem; color:var(--slate-500);">
+            Compare the Ambiguous Grammar (G₁) and Unambiguous Grammar (G₂) simultaneously on the exact same mathematical expression.
+          </p>
+        </div>
+        <a href="{{ url_for('simulator') }}" class="btn btn-secondary btn-sm">
+          <i class="bi bi-play-circle"></i> Go to Step-by-Step Simulator
+        </a>
+      </div>
+
+      <!-- Comparison Expression Input -->
+      <div class="input-controls-row">
+        <div class="expression-input-wrapper">
+          <label for="comparisonExprInput" style="display:block; font-size:0.82rem; font-weight:700; color:var(--slate-600); margin-bottom:0.35rem; text-transform:uppercase; letter-spacing:0.04em;">
+            Expression to Compare (e.g. <code>id + id * id</code>, <code>id * id + id</code>)
+          </label>
+          <input 
+            type="text" 
+            id="comparisonExprInput" 
+            class="expression-input" 
+            value="id + id * id" 
+            placeholder="e.g. id + id * id"
+            autocomplete="off"
+            spellcheck="false"
+          >
+        </div>
+        <div style="display:flex; gap:0.5rem; align-items:flex-end;">
+          <button id="btnRunComparison" class="btn btn-primary" onclick="runComparison()">
+            <i class="bi bi-arrow-repeat"></i> Compare Grammars
+          </button>
+          <button class="btn btn-secondary" onclick="document.getElementById('comparisonExprInput').value='id + id * id'; runComparison();">
+            <i class="bi bi-arrow-counterclockwise"></i> Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Comparison Preset Pills -->
+      <div class="preset-pills-row">
+        <span class="preset-pill-label"><i class="bi bi-bookmark-check"></i> Benchmark Expressions:</span>
+        <button class="preset-pill" data-expr="id + id * id">id + id * id (Classic Ambiguity)</button>
+        <button class="preset-pill" data-expr="id * id + id">id * id + id (Precedence Reversal)</button>
+        <button class="preset-pill" data-expr="(id + id) * id">(id + id) * id (Parentheses)</button>
+        <button class="preset-pill" data-expr="id + id + id">id + id + id (Associativity)</button>
+        <button class="preset-pill" data-expr="id * id * id">id * id * id (Associativity)</button>
+      </div>
+    </section>
+
+    <!-- Side-by-Side Dual Columns -->
+    <section class="comparison-grid">
+
+      <!-- Column A: Ambiguous Grammar -->
+      <div class="comparison-column">
+        <div class="column-header ambiguous-hdr">
+          <div>
+            <h3 style="font-size:1.15rem; font-weight:700;"><i class="bi bi-exclamation-triangle-fill"></i> Ambiguous Grammar (G₁)</h3>
+            <span style="font-size:0.75rem; opacity:0.85; font-family:var(--font-mono);">G₁ = ({E}, {+, *, (, ), id}, R₁, E)</span>
+          </div>
+          <span id="ambTreeCount" class="grammar-badge badge-ambiguous" style="font-size:0.8rem;">
+            2 Parse Trees
+          </span>
+        </div>
+
+        <div class="column-body">
+          <!-- Productions box -->
+          <div>
+            <h4 style="font-size:0.85rem; text-transform:uppercase; font-weight:700; color:var(--slate-500); margin-bottom:0.4rem;">
+              Production Rules
+            </h4>
+            <div class="grammar-code-box" style="margin:0;">
+              <span class="rule-lhs">E</span> <span class="rule-arrow">&rarr;</span> <span class="rule-rhs">E <span class="rule-terminal">+</span> E | E <span class="rule-terminal">*</span> E | <span class="rule-terminal">(</span> E <span class="rule-terminal">)</span> | <span class="rule-terminal">id</span></span>
+            </div>
+          </div>
+
+          <!-- Tree Selector / Groupings -->
+          <div>
+            <h4 style="font-size:0.85rem; text-transform:uppercase; font-weight:700; color:var(--slate-500); margin-bottom:0.4rem;">
+              Generated Parse Trees & Interpretations
+            </h4>
+            <div id="ambGroupings" style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+              <!-- Populated via simulator.js -->
+            </div>
+          </div>
+
+          <!-- Ambiguous Tree Canvas -->
+          <div class="tree-viewer-card" style="min-height:420px;">
+            <div id="comparisonAmbContainer" class="tree-canvas-container" style="min-height:380px;">
+              <svg id="comparisonAmbTreeSvg" class="tree-svg"></svg>
+            </div>
+          </div>
+
+          <!-- Explanation box -->
+          <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:var(--radius-md); padding:1rem; font-size:0.88rem; color:#991b1b; line-height:1.5;">
+            <strong>Ambiguity Analysis:</strong> In G₁, both <code>+</code> and <code>*</code> are introduced at the same nonterminal <code>E</code> without hierarchy. 
+            Consequently, the parser can reduce either addition first or multiplication first, yielding two valid derivations with differing arithmetic values.
+          </div>
+        </div>
+      </div>
+
+      <!-- Column B: Unambiguous Grammar -->
+      <div class="comparison-column">
+        <div class="column-header unambiguous-hdr">
+          <div>
+            <h3 style="font-size:1.15rem; font-weight:700;"><i class="bi bi-shield-check-fill"></i> Unambiguous Grammar (G₂)</h3>
+            <span style="font-size:0.75rem; opacity:0.85; font-family:var(--font-mono);">G₂ = ({E, T, F}, {+, *, (, ), id}, R₂, E)</span>
+          </div>
+          <span id="unambTreeCount" class="grammar-badge badge-unambiguous" style="font-size:0.8rem;">
+            1 Unique Parse Tree
+          </span>
+        </div>
+
+        <div class="column-body">
+          <!-- Productions box -->
+          <div>
+            <h4 style="font-size:0.85rem; text-transform:uppercase; font-weight:700; color:var(--slate-500); margin-bottom:0.4rem;">
+              Stratified Production Rules
+            </h4>
+            <div class="grammar-code-box" style="margin:0;">
+              <span class="rule-lhs">E</span> <span class="rule-arrow">&rarr;</span> <span class="rule-rhs">E <span class="rule-terminal">+</span> T | T</span> &nbsp;&nbsp;<span style="color:#64748b; font-size:0.75rem;">(Addition)</span><br>
+              <span class="rule-lhs">T</span> <span class="rule-arrow">&rarr;</span> <span class="rule-rhs">T <span class="rule-terminal">*</span> F | F</span> &nbsp;&nbsp;<span style="color:#64748b; font-size:0.75rem;">(Multiplication)</span><br>
+              <span class="rule-lhs">F</span> <span class="rule-arrow">&rarr;</span> <span class="rule-rhs"><span class="rule-terminal">(</span> E <span class="rule-terminal">)</span> | <span class="rule-terminal">id</span></span> &nbsp;&nbsp;<span style="color:#64748b; font-size:0.75rem;">(Atomic)</span>
+            </div>
+          </div>
+
+          <!-- Grouping info -->
+          <div>
+            <h4 style="font-size:0.85rem; text-transform:uppercase; font-weight:700; color:var(--slate-500); margin-bottom:0.4rem;">
+              Enforced Canonical Grouping
+            </h4>
+            <div id="unambGroupings">
+              <!-- Populated via simulator.js -->
+            </div>
+          </div>
+
+          <!-- Unambiguous Tree Canvas -->
+          <div class="tree-viewer-card" style="min-height:420px;">
+            <div id="comparisonUnambContainer" class="tree-canvas-container" style="min-height:380px;">
+              <svg id="comparisonUnambTreeSvg" class="tree-svg"></svg>
+            </div>
+          </div>
+
+          <!-- Explanation box -->
+          <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:var(--radius-md); padding:1rem; font-size:0.88rem; color:#166534; line-height:1.5;">
+            <strong>Unambiguity Guarantee:</strong> Multiplication <code>*</code> is locked within non-terminal <code>T</code>, which is a child of <code>E</code>. 
+            This guarantees multiplication is reduced first. Left recursion (<code>E &rarr; E + T</code>) ensures identical operators associate strictly left-to-right.
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Synthesis & Academic Conclusion Matrix -->
+    <section class="conclusion-card">
+      <div class="conclusion-title">
+        <i class="bi bi-award-fill"></i> Formal Synthesis & Mathematical Conclusion
+      </div>
+      <p id="conclusionSummaryText" style="font-size:1.05rem; line-height:1.7; color:#f1f5f9; margin-bottom:1.5rem;">
+        For the expression 'id + id * id', the Ambiguous Grammar yields 2 distinct parse trees whereas the Unambiguous Grammar yields exactly 1 parse tree. 
+        This conclusively illustrates the disambiguation property: introducing non-terminals (T, F) stratifies operators into strict precedence tiers, 
+        eliminating multiple syntactical interpretations.
+      </p>
+
+      <h4 style="color:#38bdf8; font-size:1rem; font-weight:700; margin-bottom:0.75rem;">
+        Formal Property Comparison Matrix
+      </h4>
+      <div style="overflow-x:auto;">
+        <table class="matrix-table">
+          <thead>
+            <tr>
+              <th>Evaluation Property</th>
+              <th>Ambiguous Grammar (G₁)</th>
+              <th>Unambiguous Grammar (G₂)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Number of Parse Trees</strong></td>
+              <td id="matrixAmbTrees" style="color:#f87171; font-weight:700;">2</td>
+              <td id="matrixUnambTrees" style="color:#4ade80; font-weight:700;">1</td>
+            </tr>
+            <tr>
+              <td><strong>Operator Precedence</strong></td>
+              <td style="color:#f87171;">Undefined (* and + at equal level)</td>
+              <td style="color:#4ade80;">Strictly Enforced (* higher than +)</td>
+            </tr>
+            <tr>
+              <td><strong>Associativity</strong></td>
+              <td style="color:#f87171;">Ambiguous (Left or Right allowed)</td>
+              <td style="color:#4ade80;">Strictly Left-Associative (Left Recursion)</td>
+            </tr>
+            <tr>
+              <td><strong>Compiler Feasibility</strong></td>
+              <td style="color:#f87171;">Unusable (Conflicting Machine Code)</td>
+              <td style="color:#4ade80;">Deterministic (Ideal for Compilers)</td>
+            </tr>
+            <tr>
+              <td><strong>Production Stratification</strong></td>
+              <td>Flat (Single nonterminal E)</td>
+              <td>Tiered Hierarchy (E &rarr; T &rarr; F)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-content" style="justify-content: center; gap: 1.5rem;">
+      <a href="{{ url_for('home') }}" class="nav-link" style="padding:0.2rem 0.5rem;"><i class="bi bi-house-door"></i> Home</a>
+      <a href="{{ url_for('simulator') }}" class="nav-link" style="padding:0.2rem 0.5rem;"><i class="bi bi-play-circle"></i> Simulator</a>
+      <a href="{{ url_for('comparison') }}" class="nav-link active" style="padding:0.2rem 0.5rem;"><i class="bi bi-columns-gap"></i> Comparison</a>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="{{ url_for('static', filename='js/simulator.js') }}"></script>
+</body>
+</html>
